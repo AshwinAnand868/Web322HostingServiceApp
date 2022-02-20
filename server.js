@@ -31,7 +31,7 @@ app.get("/becoming_member", (req, res) => {
     res.render("registration", {layout: false });
 });
 
-app.post("/registration-submit", (req,res)=>{
+app.post("/dashboard", (req,res)=>{
     let resObj = {
         firstname : req.body.userFirstName,
         firstNameCheck : '',
@@ -43,8 +43,9 @@ app.post("/registration-submit", (req,res)=>{
         phoneCheck : '',
         companyName : req.body.companyName,
         streetAddress1 : req.body.streetAddress1,
+        addressCheck1 : '',
         streetAddress2 : req.body.streetAddress2,
-        addressCheck : '',
+        addressCheck2 : '',
         city : req.body.city,
         cityCheck : '',
         province : req.body.province,
@@ -58,9 +59,10 @@ app.post("/registration-submit", (req,res)=>{
         confirmPass : req.body.confirmPassword,
         confirmPasswordChk : '',
         agreementCheck : req.body.agreementCheck,
+        agreementCheckValue : '',
         formSubmit : req.body.submitbtn
     }
-    console.log(resObj);
+
         var fName = resObj.firstname;
         var lName = resObj.lastname;
         var regexName = /^[A-Za-z_]+$/;
@@ -80,6 +82,8 @@ app.post("/registration-submit", (req,res)=>{
             console.log("Last Name not valid");
             resObj.lastNameCheck = 'no last name';
         }
+
+
         var email = resObj.email;
         var regexEmail = /^\w+[!#$%&'*+/=?^_`{|}~-]*([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,4})+$/;
 
@@ -109,14 +113,17 @@ app.post("/registration-submit", (req,res)=>{
         }
         else{
             console.log("address is not valid");
-            resObj.addressCheck = 'no address';
+            resObj.addressCheck1 = 'no address';
         }
 
-        if(!address2){
-            console.log("address 2 not provided");
+        if(address2){
+            console.log("address 2 provided");
+            if(!addressRegex.test(address2)){
+                resObj.addressCheck2 = 'no address';
+            }
         }
         else{
-            console.log("address 2 provided");
+            console.log("address 2 not provided");
         }
 
         var city = resObj.city;
@@ -156,18 +163,19 @@ app.post("/registration-submit", (req,res)=>{
         }
         else{
             console.log("postcode is not valid");
-            resObj.postcodeCheck = 'no password';
+            resObj.postcodeCheck = 'no postcode';
         }
 
         var password = resObj.password;
         var confirmPass = resObj.confirmPass;
         var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{6,12}$/;
+
         if(password && passwordRegex.test(password)){
             console.log("password is valid");
         }
         else{
             console.log("password is not valid");
-            resObj.passwordChk = '';
+            resObj.passwordChk = 'no password';
         }
 
         if(password){
@@ -180,20 +188,43 @@ app.post("/registration-submit", (req,res)=>{
             }
         }
 
-
-
-        if(resObj.agreementCheck){
-            console.log("Agreement Accepted");
-        }else{
-            console.log("Agreement not accepted");
+        if(resObj.firstNameCheck || resObj.lastNameCheck || resObj.emailCheck || resObj.phoneCheck || resObj.addressCheck1 || resObj.cityCheck || resObj.provinceCheck || resObj.postcodeCheck || resObj.passwordChk){
+            res.render("registration", { resObj : resObj, layout : false});
         }
-
-        if(resObj.formSubmit){
-            console.log("Registered");
+        else{
+            res.send("Welcome User");
         }
-        console.log(resObj);
-        res.render("registration", { resObj : resObj, layout : false});
+       
 });
+
+
+app.post("/login-submit", (req, res) => {
+    let resObj = {
+        email : req.body.email,
+        emailCheck : '',
+        password : req.body.password,
+        passwordCheck : '',
+        rememberMe : req.body.rememberMe
+    }
+
+    var email = resObj.email;
+    if(!email){
+        resObj.emailCheck = 'no email';
+    }
+
+    var password = resObj.password;
+    if(!password){
+        resObj.passwordCheck = 'no password';
+    }
+
+    if((resObj.passwordCheck && resObj.emailCheck))
+    {
+        res.render("login", {resObj : resObj, layout: false });
+    }
+    else{
+        res.send("Welcome User");
+    }
+ });
 
 app.use(function(req,res){
     res.status(404).render("pagenotfound", {layout: false });
