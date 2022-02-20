@@ -192,7 +192,7 @@ app.post("/dashboard", (req,res)=>{
             res.render("registration", { resObj : resObj, layout : false});
         }
         else{
-            res.send("Welcome User");
+            res.render("dashboard", { resObj : resObj, layout : false});
         }
        
 });
