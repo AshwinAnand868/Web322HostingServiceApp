@@ -15,7 +15,6 @@ app.set('view engine', '.hbs');
 app.use(express.static('views'));
 
 app.get("/", (req,res) => {
-    //res.sendFile(path.join(__dirname+"/views/html/home.hbs"));
     res.render("home",
     { msg: "Haytham Qushtom", layout: false });
 });
@@ -43,7 +42,6 @@ app.post("/registration-submit", (req,res)=>{
         phone : req.body.userPhone,
         phoneCheck : '',
         companyName : req.body.companyName,
-      //  companyCheck: 'company name',
         streetAddress1 : req.body.streetAddress1,
         streetAddress2 : req.body.streetAddress2,
         addressCheck : '',
@@ -102,17 +100,6 @@ app.post("/registration-submit", (req,res)=>{
             console.log("mobile is not valid");
             resObj.phoneCheck = 'no phone number';
         }
-      
-       // var cName = resObj.companyName;
-     //   var cNameRegex = /^[a-zA-Z0-9& ]*$/;
-
-        // if(cName && cNameRegex.test(cName)){
-        //     console.log("company is valid");
-        // }
-        // else{
-        //     console.log("company name is not valid");
-        //     resObj.companyCheck = '';
-        // }
 
         var address1 = resObj.streetAddress1;
         var address2 = resObj.streetAddress2;
