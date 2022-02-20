@@ -53,7 +53,7 @@ Student Id - 152042206 -->
 </style>
 
 <body class="body">
-    <form method="post" enctype="application/x-www-form-urlencoded" action="/registration-submit">
+    <form  method="post" enctype="application/x-www-form-urlencoded" action="/registration-submit">
         <div class="container form-page rounded text-center">
             <img class="img-fluid mx-auto d-block" src="https://mpng.subpng.com/20180629/ytb/kisspng-computer-icons-clip-art-web-globe-5b35d0b6693359.5423001015302534944309.jpg" style="height:120px; width: 95px; padding-top:30px;"> 
             <h4 class="heading">Create your Account</h4>
@@ -61,79 +61,182 @@ Student Id - 152042206 -->
                 Personal Information
             </div>
             <hr class="line">
-
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-md-6 col-sm-6">
+                    {{#if resObj.firstNameCheck}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input first name
+                            </div>
+                    {{/if}}
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    {{#if resObj.lastNameCheck}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input last name
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">               
+                <div class="col-md-6 col-sm-6">
                     <div class="form-group" style="display:flex">            
                         <label for="userFirstName" class="col-sm-2 col-form-label">
                             <i class="fas fa-user" style="color: grey"></i>
                         </label>    
-                        <input type="text"  id="userFirstName" name="userFirstName" class="form-control" placeholder="First Name">    
+                        <input type="text" value="{{resObj.firstname}}" id="userFirstName" name="userFirstName" class="form-control" placeholder="First Name">    
                     </div>
+
                 </div>
-                <div class="col-md-6 form-group" style="display:flex">
+                <div class="col-md-6 col-sm-6 form-group" style="display:flex">
                     <label for="userLastName" class="col-sm-2 col-form-label">
                         <i class="fas fa-user" style="color: grey"></i>
                     </label>
 
-                    <input type="text" id="userLastName" name="userLastName"class="form-control" placeholder="Last Name">
+                    <input type="text" value="{{resObj.lastname}}" id="userLastName" name="userLastName"class="form-control" placeholder="Last Name">
+                </div>
+
+            </div>
+
+             <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.emailCheck}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input valid email
+                            </div>
+                    {{/if}}
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-md-12">
                     <div class="form-group" style="display:flex">            
                         <label for="userEmail" class="col-sm-2 col-form-label">
                             <i class="fas fa-envelope" style="color: grey"></i>
                         </label>    
-                        <input type="email" id="userEmail" name="userEmail" class="form-control" placeholder="Email">    
+                        <input type="email" value="{{resObj.email}}" id="userEmail" name="userEmail" class="form-control" placeholder="Email">    
                     </div>
                 </div>
-                <div class="col-md-6 form-group" style="display:flex">
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.phoneCheck}}
+                                <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                    Error: Please input valid phone number
+                                </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 form-group" style="display:flex">
                     <label for="userPhone" class="col-sm-2 col-form-label">
                         <i class="fas fa-phone" style="color: grey"></i>
                     </label>
 
-                    <input type="text" id="userPhone" name="userPhone" class="form-control" placeholder="Mobile">
+                    <input type="text" value="{{resObj.phone}}" id="userPhone" name="userPhone" class="form-control" placeholder="Mobile">
                 </div>
             </div>
             <div class = info-heading>
                Billing Address
             </div>
             <hr class="line">
+            
             <div class="row">
                 <div class="col-sm-12 form-group" style="display: flex; margin-top: 38px; margin-bottom: 20px;"> 
                     <label for="companyName" class="col-sm-2 col-form-label">
                         <i class="fas fa-building" style="color: grey; "></i>
                     </label>
 
-                    <input type="text" id="companyName" name="companyName" class="form-control" placeholder="Company Name(Optional)">
+                    <input type="text" value="{{resObj.companyName}}"  id="companyName" name="companyName" class="form-control" placeholder="Company Name(Optional)">
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.addressCheck1}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input valid street address
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-12 form-group" style="display: flex; margin-bottom: 20px;"> 
                     <label for="streetAddress1" class="col-sm-2 col-form-label">
                         <i class="fas fa-map-marker-alt" style="color: grey"></i>
                     </label>
-                    <input type="text" id="streetAddress1" name="streetAddress1" class="form-control" placeholder="Street Address 1">
+                    <input type="text" value="{{resObj.streetAddress1}}" id="streetAddress1" name="streetAddress1" class="form-control" placeholder="Street Address 1">
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.addressCheck2}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input valid address
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-sm-12 form-group" style="display: flex; margin-bottom: 20px;"> 
                     <label for="streetAddress2" class="col-sm-2 col-form-label">
                         <i class="fas fa-map-marker-alt" style="color: grey"></i>
                     </label>
-                    <input type="text" id="streetAddress2" name="streetAddress2" class="form-control" placeholder="Street Address 2(Optional)">
+                    <input type="text" value="{{resObj.streetAddress2}}" id="streetAddress2" name="streetAddress2" class="form-control" placeholder="Street Address 2(Optional)">
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 col-sm-4">
+                    {{#if resObj.cityCheck}}
+                            <div class="alert alert-danger" role="alert">
+                                Invalid city
+                            </div>
+                    {{/if}}
+                </div>
+                <div class="col-md-5 col-sm-5">
+                    {{#if resObj.provinceCheck}}
+                            <div class="alert alert-danger" role="alert">
+                                Invalid province
+                            </div>
+                    {{/if}}
+                </div>
+                 <div class="col-md-3 col-sm-3">
+                    {{#if resObj.postcodeCheck}}
+                            <div class="alert alert-danger" role="alert">
+                                Invalid postcode
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-4 form-group">
-                    <input type="text" id="city" name="city" class="form-control" placeholder="City">
+                    <input type="text" id="city" value="{{resObj.city}}" name="city" class="form-control" placeholder="City">
                 </div>
                 <div class="col-sm-5 form-group">
-                    <input type="text" id="province" name="province"class="form-control" placeholder="Province">
+                    <input type="text" value="{{resObj.province}}" id="province" name="province"class="form-control" placeholder="Province">
                 </div>
                 <div class="col-sm-3 form-group">
-                    <input type="text" id="postcode" name="postcode" class="form-control" placeholder="Postcode">
+                    <input type="text" value="{{resObj.postcode}}" id="postcode" name="postcode" class="form-control" placeholder="Postcode">
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.countryCheck}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Please input valid country
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-12 form-group" style="display: flex;">
-                    <label for="country" class="col-sm-2 col-form-label">
-                        <i class="fas fa-globe" style="color:grey;"></i>
-                    </label>
-                <input type="text" id="country" name="country" class="form-control" placeholder="Cananda">
+                        <label for="country" class="col-sm-2 col-form-label">
+                            <i class="fas fa-globe" style="color:grey;"></i>
+                        </label>
+                    <input type="text" value="{{resObj.country}}" id="country" name="country" class="form-control" placeholder="Cananda">
                 </div>
             </div>
             <div class = info-heading>
@@ -143,42 +246,71 @@ Student Id - 152042206 -->
              <div>
                  Password must be 6 to 12 characters long and must contain one lowercase letter, one uppercase letter and one special character.
              </div>
-            <div class="row" style="margin-top: 30px;">
+
+
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    {{#if resObj.passwordChk}}
+                            <div style="margin-left:30px; margin-top:20px" class="alert alert-danger" role="alert">
+                                Error: Please follow the above details while making your password
+                            </div>
+                    {{/if}}
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    {{#if resObj.confirmPasswordChk}}
+                            <div style="margin-left:30px; margin-top:20px" class="alert alert-danger" role="alert">
+                                Error: Please input same formatted password for both password fields
+                            </div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group" style="display:flex">            
                         <label for="userPassword" class="col-sm-2 col-form-label">
                             <i class="fas fa-lock" style="color: grey"></i>
                         </label>    
-                        <input type="password" id="userPassword" name="userPassword" class="form-control" placeholder="Password">    
+                        <input type="password" value="{{resObj.password}}" id="userPassword" name="userPassword" class="form-control" placeholder="Password">    
                     </div>
                 </div>
-            
-            <div class="col-sm-6">
+                <div class="col-sm-6">
                     <div class="form-group" style="display:flex">            
                         <label for="confirmPassword" class="col-sm-2 col-form-label">
                             <i class="fas fa-lock" style="color: grey"></i>
                         </label>    
-                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm Password">    
-                    </div>
+                        <input type="password" value="{{resObj.confirmPass}}" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm Password">    
+                </div>
             </div>
         </div>
-            <div class="service-terms container">
+        <div class="service-terms container">
                 <div class="terms-heading" style="background-color: rgb(248, 175, 175); text-align: center;">
                     Terms of Service
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 col-sm-12">
+                        {{#if resObj.agreementCheck}}
+                             
+                        {{else}}
+                           <div style="margin-top:20px;" class="alert alert-danger" role="alert">
+                                   Please check the terms of service.
+                            </div>
+                        {{/if}}
+                    </div>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="agreement-check" name="agreementCheck">
                     <label class="form-check-label" for="agreement-check">
-                        By submitting this order, you agree to our Terms of Service and Privacy Policy. You agree that WHS will automatically attempt to renew your services prior to their next due date unless you request.
+                        By submitting this form, you agree to our Terms of Service and Privacy Policy.
                     </label>
                 </div>
             
-            <hr class="line">
-            <input class="btn btn-lg btn-primary btn-block" type="submit" name="submitbtn" value="Register">
-            <hr class="line" style="margin-top: 10px;">
-            <div class="row"  style="padding: 13px;">
-                Already a client? <a href="/login" style="text-decoration: none;">&nbsp Login</a>
-            </div>
+                <hr class="line">
+                <input class="btn btn-lg btn-primary btn-block" type="submit" name="submitbtn" value="Register">
+                <hr class="line" style="margin-top: 10px;">
+                <div class="row"  style="padding: 13px;">
+                    Already a client? <a href="/login" style="text-decoration: none;">&nbsp Login</a>
+                </div>
         </div>
     </form>
 </body>
