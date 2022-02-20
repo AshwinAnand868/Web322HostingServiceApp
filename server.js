@@ -222,7 +222,7 @@ app.post("/login-submit", (req, res) => {
         res.render("login", {resObj : resObj, layout: false });
     }
     else{
-        res.send("Welcome User");
+            res.render("dashboard", { resObj : resObj, layout : false});
     }
  });
 
