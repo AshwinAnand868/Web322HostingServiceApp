@@ -1,0 +1,17 @@
+{
+  "name": "web322assignment2",
+  "version": "1.0.0",
+  "description": "Assignment 2 on Web hosting Services based on WHC(Web Hosting Canada) website by Ashwin Anand",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Ashwin Anand",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.2",
+    "express-handlebars": "^6.0.2"
+  }
+}

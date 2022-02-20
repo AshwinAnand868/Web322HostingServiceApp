@@ -1,0 +1,3 @@
+https://ashwin206a2.herokuapp.com/
+
+I named my app in small letters because when I tried to rename the app in the format (Ashwin206A2.herokuapp.com) in the heroku cli using heroku rename command, it gave me error saying that I can only include lower case letter for the app name. That's why I named it as the above first line.
