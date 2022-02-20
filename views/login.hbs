@@ -48,32 +48,54 @@ Student Id - 152042206 -->
 </style>
 
 <body class="body">
-    <form>
+    <form method="post" enctype="application/x-www-form-urlencoded" action="/login-submit">
         <div class="container form-page rounded text-center">
             <img class="img-fluid mx-auto d-block" src="https://mpng.subpng.com/20180629/ytb/kisspng-computer-icons-clip-art-web-globe-5b35d0b6693359.5423001015302534944309.jpg" style="height:120px; width: 95px; padding-top:30px;"> 
             <h4 class="heading">Sign in to your Account</h4>
             <hr class=line>
+            
+            <div class="row">
+                
+
+            </div>
             <div class="row justify-content-center">
-                <div class="col-md-10" style="margin-top: 30px;">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.passwordCheck}}
+                                <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                    Error: Please input valid email address
+                                </div>
+                    {{/if}}
+                </div>
+                <div class="col-md-10 col-sm-10" style="margin-top: 30px;">
                     <div class="form-group" style="display:flex">            
-                        <label for="enterEmail" class="col-sm-2 col-form-label">
+                        <label for="enterEmail" class="col-sm-1 col-form-label">
                             <i class="fas fa-user" style="color: grey"></i>
                         </label>    
-                        <input type="text" id="enterEmail" class="form-control" placeholder="Enter Email">    
+                        <input type="text" name="email" id="enterEmail" class="form-control" placeholder="Enter Email">    
                     </div>
                 </div>
-                <div class="col-md-10">
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-sm-12">
+                    {{#if resObj.emailCheck}}
+                                <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                    Error: Please input correct password
+                                </div>
+                    {{/if}}
+                </div>
+                <div class="col-md-10 col-sm-10">
                     <div class="form-group" style="display:flex">            
-                        <label for="enterPass" class="col-sm-2 col-form-label">
+                        <label for="enterPass" class="col-sm-1 col-form-label">
                             <i class="fas fa-lock" style="color: grey"></i>
                         </label>    
-                        <input type="text" id="enterPass" class="form-control" placeholder="Password">    
+                        <input type="text" name="password" id="enterPass" class="form-control" placeholder="Password">    
                     </div>
                 </div>
             </div>
             <hr class=line>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="rememberme">
+                <input class="form-check-input" type="checkbox" id="rememberme" name="rememberMe">
                 <label class="form-check-label" for="rememberme">Remember Me</label>
             </div>
             <div style="color:rgb(54, 166, 211)">
