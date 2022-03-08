@@ -94,14 +94,17 @@ Student Id - 152042206 -->
 
                     <input type="text" value="{{resObj.lastname}}" id="userLastName" name="userLastName"class="form-control" placeholder="Last Name">
                 </div>
-
             </div>
-
              <div class="row">
                 <div class="col-md-12 col-sm-12">
                     {{#if resObj.emailCheck}}
                             <div style="margin-left:30px;" class="alert alert-danger" role="alert">
                                 Error: Please input valid email
+                            </div>
+                    {{/if}}
+                    {{#if resObj.emailCheck2}}
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                                Error: Email Id already exists! Please enter another one.
                             </div>
                     {{/if}}
                 </div>
@@ -120,9 +123,9 @@ Student Id - 152042206 -->
             <div class="row">
                 <div class="col-md-12 col-sm-12">
                     {{#if resObj.phoneCheck}}
-                                <div style="margin-left:30px;" class="alert alert-danger" role="alert">
+                            <div style="margin-left:30px;" class="alert alert-danger" role="alert">
                                     Error: Please input valid phone number
-                                </div>
+                            </div>
                     {{/if}}
                 </div>
             </div>
@@ -304,7 +307,6 @@ Student Id - 152042206 -->
                         By submitting this form, you agree to our Terms of Service and Privacy Policy.
                     </label>
                 </div>
-            
                 <hr class="line">
                 <input class="btn btn-lg btn-primary btn-block" type="submit" name="submitbtn" value="Register">
                 <hr class="line" style="margin-top: 10px;">
