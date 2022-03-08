@@ -10,8 +10,12 @@
   "author": "Ashwin Anand",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.2",
     "express": "^4.17.2",
-    "express-handlebars": "^6.0.2"
+    "express-handlebars": "^6.0.2",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4",
+    "sequelizer": "^1.1.4"
   }
 }
