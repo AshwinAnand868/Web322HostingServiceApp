@@ -3,13 +3,157 @@ var app = express();
 var path = require("path");
 const bodyParser = require("body-parser");
 const handlebars = require("express-handlebars");
+const sequelize = require("sequelize");
+const bcrypt = require('bcryptjs');
 
-var HTTP_PORT =  process.env.PORT || 80;
+const databaseConn = new sequelize(
+    "dd5oircitvaivv", // Database name
+    "nyefttijsqgadx", // username
+    "69acb70330894c1e334963400bba4522ab9840b40d6f1eda36ba630bea074880", // password
+    {
+        host : "ec2-3-227-195-74.compute-1.amazonaws.com",
+        dialect : 'postgres',
+        port: 5432,
+        dialectOptions : {ssl : {rejectUnauthorized : false}}
+    }
+);
+
+const clientsTable = databaseConn.define(
+    "customers",
+    {
+        firstName :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        lastName :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        emailId : {
+            type : sequelize.STRING,
+            primaryKey : true,
+            allowNull: false
+        },
+        mobile :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        companyName :{
+            type : sequelize.STRING,
+            defaultValue: null
+        },
+        street_Address1 :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        street_Address2 :{
+            type : sequelize.STRING,
+            defaultValue: null
+        },
+        city :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        province :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        postcode :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        country :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+        role:{
+            type : sequelize.STRING,
+            allowNull : false
+        },
+        password :{
+            type : sequelize.STRING,
+            allowNull: false
+        },
+
+    },
+    {
+        createdAt : false,
+        updatedAt : false
+    }
+);
+
+const plansTable = databaseConn.define(
+    "Plans",
+    {
+        Id : {
+            type: sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        }, 
+        PlanType : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        Price : {
+            type : sequelize.DOUBLE,
+            allowNull:false
+        },
+        Performance : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        Websites : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        Space : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        EmailAccounts : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        SSL : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        Domain: {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        Features : {
+            type : sequelize.STRING,
+            allowNull:false
+        },
+        EmailMarketing : {
+            type : sequelize.STRING,
+            allowNull:false
+        }
+    },
+    {
+        createdAt : false,
+        updatedAt : false
+    }
+)
+var HTTP_PORT =  process.env.PORT || 9090;
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.engine(".hbs", handlebars.engine({ extname: '.hbs' }));
+app.engine(".hbs", handlebars.engine(
+    { 
+        extname: '.hbs',
+        helpers: { 
+            warning: function(options) {
+                return "<div style='margin-left:30px;' class='alert alert-danger' role='alert'>" 
+                        +
+                        "</div>";
+            }
+        }
+        
+    }
+));
 app.set('view engine', '.hbs');
 
 app.use(express.static('views'));
@@ -28,9 +172,48 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/becoming_member", (req, res) => {
-    res.render("registration", {layout: false });
+    res.render("registration", {layout: false});
 });
 
+app.get("/plan_enterprise", (req,res)=>{
+  
+
+     plansTable.findAll({
+        attributes : ["PlanType", "Price", "Performance", "Websites", "Space", "EmailAccounts", "SSL", "Domain", "Features", "EmailMarketing"],
+        where : {
+            Price : 11.89
+        }
+    }).then((obj)=>{
+        let data = obj.map(value => value.dataValues);
+        console.log(data);
+        res.render("plan_enterprise", {resObj : data[0], layout: false });
+    }); 
+});
+
+app.get("/plan_pro", (req,res)=>{
+     plansTable.findAll({
+        attributes : ["PlanType", "Price", "Performance", "Websites", "Space", "EmailAccounts", "SSL", "Domain", "Features", "EmailMarketing"],
+        where : {
+            Price : 3.92
+        }
+    }).then((obj)=>{
+        let data = obj.map(value => value.dataValues);
+        console.log(data);
+        res.render("plan_pro", {resObj : data[0], layout: false });
+    }); 
+});
+app.get("/plan_beginner", (req,res)=>{
+     plansTable.findAll({
+        attributes : ["PlanType", "Price", "Performance", "Websites", "Space", "EmailAccounts", "SSL", "Domain", "Features", "EmailMarketing"],
+        where : {
+            Price : 3.89
+        }
+    }).then((obj)=>{
+        let data = obj.map(value => value.dataValues);
+        console.log(data);
+        res.render("plan_pro", {resObj : data[0], layout: false });
+    }); 
+});
 app.post("/dashboard", (req,res)=>{
     let resObj = {
         firstname : req.body.userFirstName,
@@ -39,6 +222,7 @@ app.post("/dashboard", (req,res)=>{
         lastNameCheck : '',
         email : req.body.userEmail,
         emailCheck : '',
+        emailCheck2 : '',
         phone : req.body.userPhone,
         phoneCheck : '',
         companyName : req.body.companyName,
@@ -60,7 +244,7 @@ app.post("/dashboard", (req,res)=>{
         confirmPasswordChk : '',
         agreementCheck : req.body.agreementCheck,
         agreementCheckValue : '',
-        formSubmit : req.body.submitbtn
+        role : "regular user",
     }
 
         var fName = resObj.firstname;
@@ -192,11 +376,57 @@ app.post("/dashboard", (req,res)=>{
             res.render("registration", { resObj : resObj, layout : false});
         }
         else{
-            res.render("dashboard", { resObj : resObj, layout : false});
-        }
-       
-});
 
+            clientsTable.findAll(
+            {
+                attributes : ["emailId"]
+                }).then((obj)=>{
+                var i = 0;
+                const data = obj.map(value => value.dataValues);
+                obj.map(value => {
+                     i++;
+                });
+
+                for(var j =0; j < i; j++)
+                {
+                    if(data[j].emailId == resObj.email){
+                        resObj.emailCheck2 = 'Email already exists';
+                    }
+                }
+                console.log(data);
+                if(!resObj.emailCheck2){
+                    let hashedPass;
+                    bcrypt.hash(resObj.password, 10, function(err,hash){
+                        hashedPass = hash;
+                    
+                    console.log(hashedPass);
+                    clientsTable.create(
+                            {
+                                firstName : resObj.firstname,
+                                lastName : resObj.lastname,
+                                emailId : resObj.email,
+                                mobile : resObj.phone,
+                                companyName : resObj.companyName,
+                                street_Address1 : resObj.streetAddress1,
+                                street_Address2 : resObj.streetAddress2,
+                                city : resObj.city,
+                                province:resObj.province,
+                                postcode : resObj.postcode,
+                                country : resObj.country,
+                                password : hashedPass,
+                                role : resObj.role,
+                            }
+                        ).then(()=>{
+                            res.render("dashboard", { resObj : resObj, layout : false});
+                    }); 
+                });
+                }
+                else{
+                    res.render("registration", {resObj : resObj, layout : false});
+                }
+            });
+        }
+});
 
 app.post("/login-submit", (req, res) => {
     let resObj = {
@@ -204,7 +434,12 @@ app.post("/login-submit", (req, res) => {
         emailCheck : '',
         password : req.body.password,
         passwordCheck : '',
-        rememberMe : req.body.rememberMe
+        rememberMe : req.body.rememberMe,
+        emailAndPasswordExist : '',
+        firstname : '',
+        lastname:'',
+        roleUpdated : '',
+        role : "regular user"
     }
 
     var email = resObj.email;
@@ -221,8 +456,47 @@ app.post("/login-submit", (req, res) => {
     {
         res.render("login", {resObj : resObj, layout: false });
     }
-    else{
-            res.render("dashboard", { resObj : resObj, layout : false});
+    else
+    {
+        clientsTable.findAll(
+            {
+                attributes : ["emailId", "password", "firstName", "lastName"]
+            }
+        ).then((obj)=>{
+            var valid = 0;
+            var i = 0;
+            const data = obj.map(value => value.dataValues);
+
+            obj.map(value => {
+                 i++;
+            });
+            let verified;
+            for(var j = 0; j < i && valid != 1; j++){
+                verified = bcrypt.compareSync(resObj.password, data[j].password);
+                console.log(verified);
+                if(data[j].emailId == resObj.email && verified){
+                    valid = 1;
+                }
+            }            
+            j = j - 1;
+            resObj.firstname = data[j].firstName;
+            resObj.lastname = data[j].lastName;
+            
+            if(valid){                      
+                if(resObj.email == "anandashwin868@gmail.com"){
+                    res.render("admin-dashboard", {resObj : resObj, layout : false})
+                }
+                else{
+                    res.render("dashboard", { resObj :resObj, layout : false});
+                }
+            }
+            else{
+                resObj.emailAndPasswordExist = 'not exist';
+                console.log(resObj.emailAndPasswordExist);
+                console.log(resObj);
+                res.render("login", {resObj : resObj, layout: false});
+            }
+        });
     }
  });
 
@@ -230,5 +504,8 @@ app.use(function(req,res){
     res.status(404).render("pagenotfound", {layout: false });
 });
 
+function onHttpStart(){
+    console.log("Server started listening on: " + HTTP_PORT);
+}
 
-app.listen(HTTP_PORT);
+databaseConn.sync().then(()=>app.listen(HTTP_PORT, onHttpStart()));
