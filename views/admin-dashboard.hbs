@@ -63,8 +63,20 @@ Student Id - 152042206 -->
 </nav>
 <body>
     <div class="welcome-msg text-center">
-        <h1>Welcome {{resObj.firstname}}&nbsp;{{resObj.lastname}}!</br>
-        <h3>You are login with email id: {{resObj.email}} as Admin</h3>
+        <h1>Welcome {{resObj.firstName}}&nbsp;{{resObj.lastName}}!</br>
+        <h3>You are login with email id: {{resObj.emailId}} as Admin</h3>
+        {{#if resObj.gotCreated}}
+            <div style="margin-top:20px;" class="alert alert-success" role="alert">
+                    Plan Created Successfully
+            </div>
+        {{/if}}
+        <a href="/new-plan" class="btn btn-lg btn-primary" target="new" style="margin-top:50px; width:20%">Add Plan</a><br>
+        {{#if resObj.gotUpdated}}
+            <div style="margin-top:20px;" class="alert alert-success" role="alert">
+                    Plan Updated Successfully
+            </div>
+        {{/if}}
+        <a href="/selectPlanToUpdate" class="btn btn-lg btn-primary" target="new" style="margin-top:50px; width:20%">Update or View Plan</a>
     </div>
 </body>
 </html>
