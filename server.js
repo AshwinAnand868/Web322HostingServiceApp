@@ -7,7 +7,9 @@ const bodyParser = require("body-parser");
 const handlebars = require("express-handlebars");
 const sequelize = require("sequelize");
 const bcrypt = require('bcryptjs');
+const clientSessions = require("client-sessions");
 const multer = require("multer");
+const { getSequelizeTypeFromJsonFormat } = require("sequelizer/lib/JsonSchemaDefinition");
 
 const storage = multer.diskStorage({
     destination: "./public/photos",
@@ -17,6 +19,22 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.engine(".hbs", handlebars.engine({ extname: '.hbs' }));
+app.set('view engine', '.hbs');
+
+app.use(express.static('public'));
+app.use(express.json());
+app.use(clientSessions({
+    cookieName: "session",
+    secret: "web_hosting_services'_secret_is_to_win_its_customers'_trust",
+    duration: 2 * 60 * 1000,
+    activeDuration: 60 * 1000
+}));
+
+var HTTP_PORT = process.env.PORT || 9090;
 
 
 const databaseConn = new sequelize(
@@ -157,28 +175,74 @@ const plansTable = databaseConn.define(
         createdAt: false,
         updatedAt: false
     }
-)
-var HTTP_PORT = process.env.PORT || 9090;
+);
 
-
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.engine(".hbs", handlebars.engine(
+const ordersTable = databaseConn.define(
+    "Orders",
     {
-        extname: '.hbs',
-        helpers: {
-            warning: function (options) {
-                return "<div style='margin-left:30px;' class='alert alert-danger' role='alert'>"
-                    +
-                    "</div>";
-            }
+        Id: {
+            type: sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        PlanName: {
+            type: sequelize.STRING
+        },
+        Price: {
+            type: sequelize.DOUBLE
         }
-
+    },
+    {
+        createdAt: false,
+        updatedAt: false
     }
-));
-app.set('view engine', '.hbs');
+);
 
-app.use(express.static('public'));
+const cart = databaseConn.define(
+    "Cart",
+    {
+        Id: {
+            type: sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        PlanName: {
+            type: sequelize.STRING
+        },
+        Price: {
+            type: sequelize.DOUBLE
+        },
+        CustomerId: {
+            type: sequelize.STRING
+        }
+    },
+    {
+        createdAt: false,
+        updatedAt: false
+    }
+);
+
+clientsTable.hasMany(ordersTable);
+
+function authenticate(req, res, next) {
+    if (!req.session.user) {
+        res.redirect("/login");
+
+    } else {
+        next();
+    }
+}
+
+function authorize(req, res, next) {
+    if (req.session.user) {
+        if (req.session.user.role == "admin") {
+            next();
+        }
+    }
+    else {
+        res.redirect("/login");
+    }
+}
 
 app.get("/", (req, res) => {
     res.render("home",
@@ -196,11 +260,6 @@ app.get("/login", (req, res) => {
 app.get("/becoming_member", (req, res) => {
     res.render("registration", { layout: false });
 });
-
-app.get("/admin-dashboard", function (req, res) {
-    res.render("admin-dashboard", { layout: false });
-});
-
 app.get("/plan_enterprise", (req, res) => {
     plansTable.findAll({
         attributes: ["PlanType", "Price", "Description", "Performance", "Websites", "Space", "EmailAccounts", "SSL", "Domain", "Features", "EmailMarketing", "MostPopular"],
@@ -235,11 +294,21 @@ app.get("/plan_beginner", (req, res) => {
     }).then((obj) => {
         let data = obj.map(value => value.dataValues);
         console.log(data);
-        res.render("plan_pro", { resObj: data[0], layout: false });
+        res.render("plan_beginner", { resObj: data[0], layout: false });
     });
 });
 
-app.get("/new-plan", (req, res) => {
+app.get("/viewAllPlans", (req, res) => {
+    plansTable.findAll({
+        attributes: ['PlanType', 'Id'],
+        order: ['Id']
+    }).then((plansObj) => {
+        let plans = plansObj.map(plan => plan.dataValues);
+        res.render("viewAllPlans", { plans: plans, layout: false })
+    });
+});
+
+app.get("/new-plan", authenticate, authorize, (req, res) => {
     let resObj = {
         name: "",
         price: "",
@@ -259,19 +328,18 @@ app.get("/new-plan", (req, res) => {
     res.render("new-plan", { resObj: resObj, layout: false });
 });
 
-app.get("/selectPlanToUpdate", (req, res) => {
+app.get("/selectPlanToUpdate", authenticate, authorize, (req, res) => {
     plansTable.findAll({
         attributes: ['PlanType', 'Id'],
         order: ['Id']
     }).then((plansObj) => {
         let plans = plansObj.map(plan => plan.dataValues);
-        console.log(plans);
         res.render("all-plans", { plans: plans, layout: false })
     });
 });
 
 
-app.post("/update-plan", (req, res) => {
+app.post("/update-plan", authenticate, authorize, (req, res) => {
     const id = req.body.id;
     plansTable.findAll({
         where: {
@@ -295,13 +363,11 @@ app.post("/update-plan", (req, res) => {
             mostPopular: plans[0].MostPopular,
             filename: plans[0].IconName
         }
-
         res.render("update-one-plan", { resObj: resObj, layout: false });
-
     });
 });
 
-app.post("/addPlan", upload.single("icon"), (req, res) => {
+app.post("/addPlan", authenticate, authorize, upload.single("icon"), (req, res) => {
     let resObj = {
         name: req.body.planName,
         price: req.body.planPrice,
@@ -346,26 +412,25 @@ app.post("/addPlan", upload.single("icon"), (req, res) => {
                 emailId: resObj[0].emailId,
                 gotCreated: 'Plan Created'
             }
-            console.log(resObj);
             res.render("admin-dashboard", { resObj: data, layout: false });
         });
     });
 });
 
-app.post("/updatePlan", (req, res) => {
+app.post("/updatePlan", authenticate, authorize, (req, res) => {
     plansTable.update({
-        PlanType: req.body.name,
-        Price: req.body.price,
-        Description: req.body.desc,
-        Performance: req.body.performance,
+        PlanType: req.body.planName,
+        Price: req.body.planPrice,
+        Description: req.body.planDesc,
+        Performance: req.body.planPerf,
         Websites: req.body.websites,
         Space: req.body.space,
         EmailAccounts: req.body.emailAccs,
         SSL: req.body.ssl,
         Domain: req.body.domain,
         Features: req.body.features,
-        EmailMarketing: req.body.emailMarketing,
-        MostPopular: req.body.mostPopular
+        EmailMarketing: req.body.emailMar,
+        MostPopular: req.body.popular
     }, {
         where: {
             PlanType: req.body.planName
@@ -377,23 +442,15 @@ app.post("/updatePlan", (req, res) => {
             where: {
                 role: "admin"
             },
-           
+
         }).then((obj) => {
             const resObj = obj.map(value => value.dataValues);
-            const data = {
-                firstName: resObj[0].firstName,
-                lastName: resObj[0].lastName,
-                emailId: resObj[0].emailId,
-                gotUpdated: 'Plan Updated'
-            }
-            console.log(resObj);
-            res.render("admin-dashboard", { resObj: data, layout: false });
+            res.redirect("/admin-dashboard");
         });
-
     })
 });
 
-app.post("/view-plan", (req, res) => {
+app.post("/view-plan", authenticate, authorize, (req, res) => {
     const id = req.body.id;
     plansTable.findAll({
         where: {
@@ -416,15 +473,13 @@ app.post("/view-plan", (req, res) => {
             EmailMarketing: plans[0].EmailMarketing,
             MostPopular: plans[0].MostPopular,
             filename: plans[0].IconName,
-            mostPopular_ : ''
+            mostPopular_: ''
         }
-        
-        if(resObj.MostPopular=="yes" || resObj.MostPopular=="Yes")
-        {
-           resObj.mostPopular_ = 'true';
+
+        if (resObj.MostPopular == "yes" || resObj.MostPopular == "Yes") {
+            resObj.mostPopular_ = 'true';
         }
-        console.log(resObj);
-        if(id == 1)
+        if (id == 1)
             res.render("plan_beginner", { resObj: resObj, layout: false });
         else if (id == 2) {
             res.render("plan_pro", { resObj: resObj, layout: false });
@@ -435,15 +490,133 @@ app.post("/view-plan", (req, res) => {
             res.render("plan", { resObj: resObj, layout: false });
         }
     });
-    
 });
-app.post("/dashboard", (req, res) => {
+
+app.post("/api/add_to_cart", authenticate, (req, res) => {
+    console.log(req.session);
+    if (req) {
+        let resObj = {
+            planName: req.body.planName,
+            price: req.body.price,
+            email: req.session.user.emailId
+        }
+        console.log(resObj);
+        cart.create({
+            PlanName: resObj.planName,
+            Price: resObj.price,
+            CustomerId: resObj.email
+        }).then(function () {
+            console.log("order got created");
+            let data = {
+                msg: "data"
+            }
+            res.json(data);
+        });
+    }
+    else {
+        res.redirect("/login");
+    }
+
+});
+
+app.post("/cart", authenticate, (req, res) => {
+    cart.findAll({
+        attributes: ["PlanName", "Price"],
+        where: {
+            CustomerId: req.session.user.emailId
+        }
+    }).then((cartObj) => {
+        let items = cartObj.map(order => order.dataValues);
+        let resObj = {
+            planName: '',
+            price: ''
+        }
+
+        console.log(items[0]);
+        if (items[0]) {
+            resObj.planName = items[0].PlanName;
+            resObj.price = items[0].Price;
+        }
+        res.render("cart_plan", { resObj: resObj, layout: false });
+    });
+});
+
+app.get("/cart", authenticate, (req, res) => {
+    cart.findAll({
+        attributes: ["PlanName", "Price"],
+        where: {
+            CustomerId: req.session.user.emailId
+        }
+    }).then((cartObj) => {
+        let items = cartObj.map(order => order.dataValues);
+        let resObj = {
+            planName: '',
+            price: ''
+        }
+
+        console.log(items[0]);
+        if (items[0]) {
+            resObj.planName = items[0].PlanName;
+            resObj.price = items[0].Price;
+        }
+        res.render("cart_plan", { resObj: resObj, layout: false });
+    });
+});
+
+app.get("/checkout", authenticate, (req, res) => {
+
+    cart.findOne({
+        attributes: ["PlanName", "Price", "CustomerId"],
+        where: {
+            CustomerId: req.session.user.emailId
+        }
+    }).then((cartObj) => {
+
+        if (cartObj && cartObj.Price > 0) {
+            console.log("price good");
+            ordersTable.create({
+                PlanName: cartObj.PlanName,
+                Price: cartObj.Price,
+                customerEmailId: cartObj.CustomerId
+            }).then(function () {
+                console.log("order created");
+                cart.destroy({
+                    where: {
+                        CustomerId: req.session.user.emailId
+                    }
+                });
+                console.log("cart destroyed");
+            });
+             res.redirect("/dashboard");
+         }
+         else{
+            res.redirect("/cart");
+         }
+    });
+});
+
+app.post("/api/ordersummary", authenticate, (req, res) => {
+    let oPrice = req.body.oPrice;
+    let discountedPrice = req.body.discountedPrice;
+    let nMonths = req.body.nMonths;
+    let beforeDiscTotalPrice = oPrice * nMonths;
+    let afterDiscTotalPrice = discountedPrice * nMonths;
+    let savedPrice = beforeDiscTotalPrice - afterDiscTotalPrice;
+    let dataToReturn = {
+        nMonths: nMonths,
+        beforeDiscTotalPrice: beforeDiscTotalPrice,
+        afterDiscTotalPrice: afterDiscTotalPrice,
+        savedPrice: savedPrice
+    }
+    res.json(dataToReturn);
+});
+app.post("/registration", (req, res) => {
     let resObj = {
-        firstname: req.body.userFirstName,
+        firstName: req.body.userFirstName,
         firstNameCheck: '',
-        lastname: req.body.userLastName,
+        lastName: req.body.userLastName,
         lastNameCheck: '',
-        email: req.body.userEmail,
+        emailId: req.body.userEmail,
         emailCheck: '',
         emailCheck2: '',
         phone: req.body.userPhone,
@@ -470,8 +643,8 @@ app.post("/dashboard", (req, res) => {
         role: "regular user",
     }
 
-    var fName = resObj.firstname;
-    var lName = resObj.lastname;
+    var fName = resObj.firstName;
+    var lName = resObj.lastName;
     var regexName = /^[A-Za-z_]+$/;
 
     if (fName && regexName.test(fName)) {
@@ -490,8 +663,7 @@ app.post("/dashboard", (req, res) => {
         resObj.lastNameCheck = 'no last name';
     }
 
-
-    var email = resObj.email;
+    var email = resObj.emailId;
     var regexEmail = /^\w+[!#$%&'*+/=?^_`{|}~-]*([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,4})+$/;
 
     if (email && regexEmail.test(email)) {
@@ -575,7 +747,7 @@ app.post("/dashboard", (req, res) => {
 
     var password = resObj.password;
     var confirmPass = resObj.confirmPass;
-    var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{6,12}$/;
+    var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[_!@#$%^&*]).{6,12}$/;
 
     if (password && passwordRegex.test(password)) {
         console.log("password is valid");
@@ -604,14 +776,11 @@ app.post("/dashboard", (req, res) => {
             {
                 attributes: ["emailId"]
             }).then((obj) => {
-                var i = 0;
+                console.log(obj);
                 const data = obj.map(value => value.dataValues);
-                obj.map(value => {
-                    i++;
-                });
-
-                for (var j = 0; j < i; j++) {
-                    if (data[j].emailId == resObj.email) {
+                console.log(data);
+                for (var j = 0; j < data.length; j++) {
+                    if (data[j].emailId == resObj.emailId) {
                         resObj.emailCheck2 = 'Email already exists';
                     }
                 }
@@ -624,9 +793,9 @@ app.post("/dashboard", (req, res) => {
                         console.log(hashedPass);
                         clientsTable.create(
                             {
-                                firstName: resObj.firstname,
-                                lastName: resObj.lastname,
-                                emailId: resObj.email,
+                                firstName: resObj.firstName,
+                                lastName: resObj.lastName,
+                                emailId: resObj.emailId,
                                 mobile: resObj.phone,
                                 companyName: resObj.companyName,
                                 street_Address1: resObj.streetAddress1,
@@ -639,6 +808,12 @@ app.post("/dashboard", (req, res) => {
                                 role: resObj.role,
                             }
                         ).then(() => {
+                            req.session.user = {
+                                firstName: resObj.firstName,
+                                lastName: resObj.lastName,
+                                emailId: resObj.emailId,
+                                role: "regular user"
+                            }
                             res.render("dashboard", { resObj: resObj, layout: false });
                         });
                     });
@@ -660,9 +835,6 @@ app.post("/login-submit", (req, res) => {
         passwordCheck: '',
         rememberMe: req.body.rememberMe,
         emailAndPasswordExist: '',
-        firstName: '',
-        lastName: '',
-        roleUpdated: '',
         role: "regular user"
     }
 
@@ -682,18 +854,17 @@ app.post("/login-submit", (req, res) => {
     else {
         clientsTable.findAll(
             {
-                attributes: ["emailId", "password", "firstName", "lastName"]
+                attributes: ["emailId", "password", "firstName", "lastName", "role"],
+                where: {
+                    emailId: resObj.emailId
+                }
             }
         ).then((obj) => {
             var valid = 0;
-            var i = 0;
             const data = obj.map(value => value.dataValues);
             let password;
-            obj.map(value => {
-                i++;
-            });
             let verified;
-            for (var j = 0; j < i && valid != 1; j++) {
+            for (var j = 0; j < data.length && valid != 1; j++) {
                 password = data[j].password;
                 verified = bcrypt.compareSync(resObj.password, password);
                 if (data[j].emailId == resObj.emailId && verified) {
@@ -701,15 +872,21 @@ app.post("/login-submit", (req, res) => {
                 }
             }
             j = j - 1;
-            resObj.firstName = data[j].firstName;
-            resObj.lastName = data[j].lastName;
-            console.log(valid);
+
             if (valid) {
-                if (resObj.emailId == "anandashwin868@gmail.com") {
-                    res.render("admin-dashboard", { resObj: resObj, layout: false })
+                resObj.role = data[j].role;
+                req.session.user = {
+                    firstName: data[j].firstName,
+                    lastName: data[j].lastName,
+                    emailId: resObj.emailId,
+                    role: data[j].role
+                }
+
+                if (resObj.role == "admin") {
+                    res.redirect("/admin-dashboard");
                 }
                 else {
-                    res.render("dashboard", { resObj: resObj, layout: false });
+                    res.redirect("/dashboard");
                 }
             }
             else {
@@ -718,6 +895,21 @@ app.post("/login-submit", (req, res) => {
             }
         });
     }
+});
+
+
+app.get("/admin-dashboard", authenticate, authorize, (req, res) => {
+    res.render("admin-dashboard", { resObj: req.session.user, layout: false });
+});
+
+app.get("/dashboard", authenticate, (req, res) => {
+    res.render("dashboard", { resObj: req.session.user, layout: false });
+});
+
+app.get("/logout", function (req, res) {
+    req.session.reset();
+    console.log("logging out");
+    res.redirect("/login");
 });
 
 app.use(function (req, res) {
