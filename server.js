@@ -447,10 +447,11 @@ app.post("/updatePlan", authenticate, authorize, (req, res) => {
             const resObj = obj.map(value => value.dataValues);
             res.redirect("/admin-dashboard");
         });
+
     })
 });
 
-app.post("/view-plan", authenticate, authorize, (req, res) => {
+app.post("/view-plan", (req, res) => {
     const id = req.body.id;
     plansTable.findAll({
         where: {
@@ -510,10 +511,12 @@ app.post("/api/add_to_cart", authenticate, (req, res) => {
             let data = {
                 msg: "data"
             }
+            console.log(data);
             res.json(data);
         });
     }
     else {
+        console.log("redirecting");
         res.redirect("/login");
     }
 
@@ -590,6 +593,7 @@ app.get("/checkout", authenticate, (req, res) => {
              res.redirect("/dashboard");
          }
          else{
+            // res.render("cart_plan", { errorMsg: errorMsg, layout: false });
             res.redirect("/cart");
          }
     });
