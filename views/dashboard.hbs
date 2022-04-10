@@ -57,18 +57,24 @@ Student Id - 152042206 -->
                 <li class="nav-item">
                     <a class="nav-link link" href="/hosting-plans" target="new">Hosting Plans</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link link" href="/logout">Logout</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link link" href="/cart" target="new">Your cart</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
 <body>
     <div class="welcome-msg text-center">
-        <h1>Welcome {{resObj.firstname}}&nbsp;{{resObj.lastname}}!</br>
-        <h3>You login with email id : {{resObj.email}}</h3>
+        <h1>Welcome {{resObj.firstName}}&nbsp;{{resObj.lastName}}!</br>
+        <h3>You login with email id : {{resObj.emailId}}</h3>
     </div>
     <div class="container centered-div">
             <i class="frown-icon fas fa-frown"></i><span style="font-size:30px; color:white"> Oh dear!</span> You have not purchased any of our service yet. Get started with the most basic one.
-            <a class="hostingPlans" href="/hosting-plans#plans"></i>Click here</a>
+            <a class="hostingPlans" target="new" href="/hosting-plans#plans"></i>Click here</a>
     </div>
 </body>
 </html>
